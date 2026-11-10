@@ -497,7 +497,11 @@ def calcular_clasificacion(partidos, lista_jugadores):
     )
 
     df.index.name = "Jugador"
-
+    if df.empty:
+        df = pd.DataFrame(columns=[
+            "Jugador", "PJ", "PG", "PP", "SF", "SC", "Diferencia", "Puntos"
+        ])
+        return df, avisos
     df["Diferencia"] = df["SF"] - df["SC"]
 
     df = df.reset_index()
