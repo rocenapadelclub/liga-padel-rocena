@@ -490,8 +490,23 @@ def calcular_clasificacion(partidos, lista_jugadores):
         estadisticas,
         orient="index"
     )
-
+    
     df.index.name = "Jugador"
+    
+    if df.empty:
+        return pd.DataFrame(columns=[
+            "Pos.",
+            "Jugador",
+            "PJ",
+            "PG",
+            "PP",
+            "Ratio",
+            "SF",
+            "SC",
+            "Diferencia",
+            "Puntos"
+        ]), avisos
+    
     df = df.reset_index()
 
     # Calculamos diferencia y ratio de victorias
