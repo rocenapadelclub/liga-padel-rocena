@@ -394,12 +394,10 @@ with tab_calendario:
 # 8. CALCULAR CLASIFICACIÓN INDIVIDUAL
 # =====================================================
 
+
 def calcular_clasificacion(partidos, lista_jugadores):
 
     estadisticas = {}
-
-    # Inicializamos todos los jugadores, incluidos los que
-    # todavía no han disputado ningún partido.
 
     for jugador in lista_jugadores:
         estadisticas[jugador] = {
@@ -453,9 +451,6 @@ def calcular_clasificacion(partidos, lista_jugadores):
             )
             continue
 
-        # Añadimos automáticamente jugadores no incluidos
-        # en la pestaña Jugadores, para no perder estadísticas.
-
         for jugador in pareja_a + pareja_b:
             if jugador not in estadisticas:
                 estadisticas[jugador] = {
@@ -497,23 +492,32 @@ def calcular_clasificacion(partidos, lista_jugadores):
     )
 
     df.index.name = "Jugador"
-    if df.empty:
-        df = pd.DataFrame(columns=[
-            "Jugador", "PJ", "PG", "PP", "SF", "SC", "Diferencia", "Puntos"
-        ])
-        return df, avisos
-    df["Diferencia"] = df["SF"] - df["SC"]
-
     df = df.reset_index()
 
+    # Calculamos diferencia y ratio de victorias
+    df["Diferencia"] = df["SF"] - df["SC"]
+
+    df["Ratio"] = 0.0
+    partidos_jugados = df["PJ"] > 0
+
+    df.loc[partidos_jugados, "Ratio"] = (
+        df.loc[partidos_jugados, "PG"]
+        / df.loc[partidos_jugados, "PJ"]
+    ) * 100
+
+    # Orden: ratio, diferencia de sets, sets a favor
     df = df.sort_values(
-        by=["Puntos", "Diferencia", "SF", "Jugador"],
+        by=["Ratio", "Diferencia", "SF", "Jugador"],
         ascending=[False, False, False, True]
     ).reset_index(drop=True)
 
     df.insert(0, "Pos.", range(1, len(df) + 1))
 
+    # Formato porcentual
+    df["Ratio"] = df["Ratio"].map(lambda x: f"{x:.1f}%")
+
     return df, avisos
+
 
 
 # =====================================================
@@ -544,11 +548,24 @@ with tab_clasificacion:
     )
 
     st.caption(
-        "Orden: puntos → diferencia de sets → sets a favor."
+        "Orden: ratio de victorias → diferencia de sets → sets a favor."
     )
 
     st.dataframe(
-        df,
+        df[
+            [
+                "Pos.",
+                "Jugador",
+                "PJ",
+                "PG",
+                "PP",
+                "Ratio",
+                "SF",
+                "SC",
+                "Diferencia",
+                "Puntos"
+            ]
+        ],
         use_container_width=True,
         hide_index=True
     )
