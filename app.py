@@ -548,22 +548,9 @@ with tab_clasificacion:
     )
 
     st.dataframe(
-        df[
-            [
-                "Pos.",
-                "Jugador",
-                "PJ",
-                "PG",
-                "PP",
-                "SF",
-                "SC",
-                "Diferencia",
-                "Puntos"
-            ]
-        ],
-        hide_index=True,
+        df,
         use_container_width=True,
-        height=650
+        hide_index=True
     )
 
     if avisos:
